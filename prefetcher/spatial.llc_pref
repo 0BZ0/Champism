@@ -1,0 +1,36 @@
+#include "cache.h"
+
+// 定义预取的距离
+#define PREFETCH_DISTANCE 2048
+
+void CACHE::llc_prefetcher_initialize() 
+{
+    cout << "LLC Spatial Prefetcher" << endl;
+}
+
+uint32_t CACHE::llc_prefetcher_operate(uint64_t addr, uint64_t ip, uint8_t cache_hit, uint8_t type, uint32_t metadata_in)
+{
+    // 检查是否发生缓存命中
+    if (!cache_hit) {
+        // 空间预取：预取下一个可能被访问的数据块
+        for (int i = 1; i <= PREFETCH_DISTANCE / BLOCK_SIZE; ++i) {
+            uint64_t pf_addr = (addr + i * BLOCK_SIZE) & ~(BLOCK_SIZE - 1);
+            prefetch_line(ip, addr, pf_addr, FILL_LLC, 0);
+        }
+    }
+
+    // 返回原始的 metadata
+    return metadata_in;
+}
+
+uint32_t CACHE::llc_prefetcher_cache_fill(uint64_t addr, uint32_t set, uint32_t way, uint8_t prefetch, uint64_t evicted_addr, uint32_t metadata_in)
+{
+    // 在缓存填充时，如果有需要，可以执行一些操作
+    return metadata_in;
+}
+
+void CACHE::llc_prefetcher_final_stats()
+{
+    cout << "LLC Spatial Prefetcher Final Stats: none" << endl;
+}
+
